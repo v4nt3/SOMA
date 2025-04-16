@@ -1,7 +1,7 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase"
-//import { createServerSupabaseClient } from "@/lib/supabase-server"
+//import { createServerSupabaseClient } from "@/lib/supabase"
+import { createServerSupabaseClient } from "@/lib/supabase-server"
 
 
 type VoteType = "like" | "dislike"
