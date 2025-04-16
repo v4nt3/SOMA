@@ -1,6 +1,7 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase-server"
+import { createServerSupabaseClient } from "@/lib/supabase"
+//import { createServerSupabaseClient } from "@/lib/supabase-server"
 
 
 type VoteType = "like" | "dislike"
@@ -35,7 +36,7 @@ export async function updateVote(featureId: string, voteType: VoteType) {
   if (fetchError && fetchError.code !== "PGRST116") {
     // PGRST116 is "no rows returned" error
     console.error("Error fetching current votes:", fetchError)
-    return { success: false, message: "Error fetching current votes" }
+    return { success: false, message: `Error fetching current votes: ${fetchError.message}` }
   }
 
   const currentLikes = currentData?.likes || 0
@@ -55,7 +56,7 @@ export async function updateVote(featureId: string, voteType: VoteType) {
 
   if (updateError) {
     console.error("Error updating votes:", updateError)
-    return { success: false, message: "Error updating votes" }
+    return { success: false, message: `Error updating votes: ${updateError.message}` }
   }
 
   // Return the updated counts
