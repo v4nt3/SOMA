@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark mode colors as default */
+    --background: 222 47% 10%;
+    --foreground: 0 0% 95%;
+
+    --card: 223 45% 15%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 223 45% 15%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Primary - Brighter green */
+    --primary: 145 30% 65%;
+    --primary-foreground: 222 47% 10%;
+
+    /* Secondary - Brighter blue */
+    --secondary: 187 50% 80%;
+    --secondary-foreground: 222 47% 10%;
+
+    /* Muted - Deep blue-gray */
+    --muted: 223 45% 20%;
+    --muted-foreground: 215 20% 75%;
+
+    /* Accent - Deep navy with hint of blue */
+    --accent: 223 45% 20%;
+    --accent-foreground: 0 0% 95%;
+
+    /* Destructive */
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 95%;
+
+    /* Borders and inputs */
+    --border: 223 45% 25%;
+    --input: 223 45% 25%;
+    --ring: 187 50% 80%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Smooth transitions for all color-related properties */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Ensure proper initial rendering */
+:root {
+  color-scheme: dark;
+}
+
+html {
+  color-scheme: dark;
+}
+
+.prevent-transition * {
+  transition: none !important;
+}
