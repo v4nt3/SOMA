@@ -23,7 +23,7 @@ export function OpinionSection() {
           </p>
 
           <a
-            href="https://forms.gle/exampleSurveyLink"
+            href="https://docs.google.com/forms/d/e/1FAIpQLSfVtZ_spP04Tt4p7gXxpTBL4_uy0vOe0ts7mLlObj-cdxhYmQ/viewform?usp=dialog"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block"
@@ -63,7 +63,7 @@ export function OpinionSection() {
         </motion.p>
 
         <motion.a
-          href="https://forms.gle/exampleSurveyLink"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSfVtZ_spP04Tt4p7gXxpTBL4_uy0vOe0ts7mLlObj-cdxhYmQ/viewform?usp=dialog"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block"
