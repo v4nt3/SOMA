@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
-import { ThumbsUp, ThumbsDown, Upload } from "lucide-react"
+import { ThumbsUp, ThumbsDown, Upload, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { getVotes, updateVote } from "./actions/vote-actions"
 
@@ -15,6 +15,7 @@ export function UploadImage() {
   const [dislikes, setDislikes] = useState(0)
   const [hasVoted, setHasVoted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [mounted, setMounted] = useState(false)
   const featureId = "soma-image-upload" // Unique identifier for this feature
@@ -26,11 +27,13 @@ export function UploadImage() {
     const fetchVotes = async () => {
       try {
         setIsLoading(true)
+        setError(null)
         const { likes: initialLikes, dislikes: initialDislikes } = await getVotes(featureId)
         setLikes(initialLikes)
         setDislikes(initialDislikes)
       } catch (error) {
         console.error("Failed to fetch votes:", error)
+        setError("No se pudieron cargar los votos. Inténtalo de nuevo más tarde.")
       } finally {
         setIsLoading(false)
       }
@@ -59,6 +62,7 @@ export function UploadImage() {
   const handleLike = async () => {
     if (!hasVoted && !isLoading) {
       setIsLoading(true)
+      setError(null)
       try {
         const result = await updateVote(featureId, "like")
         if (result.success) {
@@ -66,9 +70,11 @@ export function UploadImage() {
           setHasVoted(true)
         } else {
           console.error("Error updating like:", result.message)
+          setError("No se pudo registrar tu voto. Inténtalo de nuevo más tarde.")
         }
       } catch (error) {
         console.error("Failed to update like:", error)
+        setError("Ocurrió un error al procesar tu voto. Inténtalo de nuevo más tarde.")
       } finally {
         setIsLoading(false)
       }
@@ -78,6 +84,7 @@ export function UploadImage() {
   const handleDislike = async () => {
     if (!hasVoted && !isLoading) {
       setIsLoading(true)
+      setError(null)
       try {
         const result = await updateVote(featureId, "dislike")
         if (result.success) {
@@ -85,9 +92,11 @@ export function UploadImage() {
           setHasVoted(true)
         } else {
           console.error("Error updating dislike:", result.message)
+          setError("No se pudo registrar tu voto. Inténtalo de nuevo más tarde.")
         }
       } catch (error) {
         console.error("Failed to update dislike:", error)
+        setError("Ocurrió un error al procesar tu voto. Inténtalo de nuevo más tarde.")
       } finally {
         setIsLoading(false)
       }
@@ -184,6 +193,19 @@ export function UploadImage() {
             </motion.div>
           )}
         </motion.div>
+
+        {/* Error message */}
+        {error && (
+          <motion.div
+            className="p-3 bg-destructive/10 text-destructive mx-4 mt-4 rounded-lg flex items-center"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.3 }}
+          >
+            <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+            <span>{error}</span>
+          </motion.div>
+        )}
 
         {/* Controls */}
         <div className="p-4">

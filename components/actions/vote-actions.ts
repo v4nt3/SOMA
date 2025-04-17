@@ -6,7 +6,16 @@ type VoteType = "like" | "dislike"
 
 export async function getVotes(featureId: string) {
   try {
+    console.log("Getting votes for feature:", featureId)
     const supabase = createServerSupabaseClient()
+
+    // Test connection
+    const { data: testData, error: testError } = await supabase.from("image_votes").select("count(*)").limit(1)
+    if (testError) {
+      console.error("Supabase connection test failed:", testError)
+      return { likes: 0, dislikes: 0 }
+    }
+    console.log("Supabase connection test succeeded:", testData)
 
     const { data, error } = await supabase
       .from("image_votes")
@@ -15,10 +24,16 @@ export async function getVotes(featureId: string) {
       .single()
 
     if (error) {
-      console.error("Error fetching votes:", error)
+      console.error("Error fetching votes:", error.message, error.details, error.hint)
+      // If no rows found, return zeros
+      if (error.code === "PGRST116") {
+        console.log("No votes found for feature, returning zeros")
+        return { likes: 0, dislikes: 0 }
+      }
       return { likes: 0, dislikes: 0 }
     }
 
+    console.log("Successfully fetched votes:", data)
     return { likes: data?.likes || 0, dislikes: data?.dislikes || 0 }
   } catch (err) {
     console.error("Unexpected error fetching votes:", err)
@@ -28,40 +43,59 @@ export async function getVotes(featureId: string) {
 
 export async function updateVote(featureId: string, voteType: VoteType) {
   try {
+    console.log("Updating vote for feature:", featureId, "type:", voteType)
     const supabase = createServerSupabaseClient()
 
-    // First get current votes
-    const { data: currentData, error: fetchError } = await supabase
+    // First check if the feature exists
+    const { data: existingData, error: checkError } = await supabase
       .from("image_votes")
       .select("likes, dislikes")
       .eq("feature_id", featureId)
-      .single()
+      .maybeSingle()
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      // PGRST116 is "no rows returned" error
-      console.error("Error fetching current votes:", fetchError)
-      return { success: false, message: `Error fetching current votes: ${fetchError.message}` }
+    console.log("Check for existing feature result:", existingData, checkError)
+
+    let currentLikes = 0
+    let currentDislikes = 0
+
+    if (checkError && checkError.code !== "PGRST116") {
+      console.error("Error checking for existing feature:", checkError.message, checkError.details, checkError.hint)
+      return {
+        success: false,
+        message: `Error checking for existing feature: ${checkError.message}`,
+        likes: 0,
+        dislikes: 0,
+      }
     }
 
-    const currentLikes = currentData?.likes || 0
-    const currentDislikes = currentData?.dislikes || 0
+    if (existingData) {
+      currentLikes = existingData.likes || 0
+      currentDislikes = existingData.dislikes || 0
+    }
 
+    // Prepare the update data
+    const updates = {
+      feature_id: featureId,
+      likes: voteType === "like" ? currentLikes + 1 : currentLikes,
+      dislikes: voteType === "dislike" ? currentDislikes + 1 : currentDislikes,
+      updated_at: new Date().toISOString(),
+    }
+
+    console.log("Updates prepared:", updates)
     // Update the votes
-    const updates = voteType === "like" ? { likes: currentLikes + 1 } : { dislikes: currentDislikes + 1 }
-
-    const { error: updateError } = await supabase.from("image_votes").upsert(
-      {
-        feature_id: featureId,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "feature_id" },
-    )
+    const { data: updateData, error: updateError } = await supabase.from("image_votes").upsert(updates).select()
 
     if (updateError) {
-      console.error("Error updating votes:", updateError)
-      return { success: false, message: `Error updating votes: ${updateError.message}` }
+      console.error("Error updating votes:", updateError.message, updateError.details, updateError.hint)
+      return {
+        success: false,
+        message: `Error updating votes: ${updateError.message}`,
+        likes: currentLikes,
+        dislikes: currentDislikes,
+      }
     }
+
+    console.log("Successfully updated votes:", updateData)
 
     // Return the updated counts
     return {
@@ -71,6 +105,11 @@ export async function updateVote(featureId: string, voteType: VoteType) {
     }
   } catch (err) {
     console.error("Unexpected error updating votes:", err)
-    return { success: false, message: `Unexpected error: ${err}` }
+    return {
+      success: false,
+      message: `Unexpected error: ${err instanceof Error ? err.message : String(err)}`,
+      likes: 0,
+      dislikes: 0,
+    }
   }
 }
