@@ -18,14 +18,14 @@ export async function sendWelcomeEmailGmail(email: string) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.GMAIL_USER, // Tu dirección de Gmail
-        pass: process.env.GMAIL_APP_PASSWORD, // Contraseña de aplicación
+        user: process.env.GMAIL_USER, 
+        pass: process.env.GMAIL_APP_PASSWORD, 
       },
     })
 
     // Enviar el correo
     await transporter.sendMail({
-      from: `"SOMA" <${process.env.GMAIL_USER}>`, // Tu dirección de Gmail
+      from: `"SOMA" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: "Tu guía gratuita de SOMA",
       html: getWelcomeEmailTemplate(downloadUrl),

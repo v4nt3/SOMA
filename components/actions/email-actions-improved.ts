@@ -18,7 +18,7 @@ export async function sendWelcomeEmail(email: string, name?: string) {
 
     // Enviar el correo usando la plantilla
     const { data, error } = await resend.emails.send({
-      from: "SOMA <no-reply@tudominio.com>",
+      from: "SOMA <onboarding@resend.dev>",
       to: email,
       subject: "Tu guía gratuita de SOMA",
       html: emailTemplates.welcome(userName),
