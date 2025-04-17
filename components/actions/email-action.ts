@@ -2,6 +2,8 @@
 
 import { Resend } from "resend"
 import { createClient } from "@supabase/supabase-js"
+import fs from "fs"
+import path from "path"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -60,6 +62,9 @@ export async function sendWelcomeEmail(email: string) {
       console.error("Error checking previous emails:", checkError)
     }
 
+    const pdfPath = path.join(process.cwd(), "public/Doc2.pdf")
+    const fileBuffer = fs.readFileSync(pdfPath)
+
     // Enviar el correo usando el dominio compartido de Resend
     const { data, error } = await resend.emails.send({
       from: "SOMA <onboarding@resend.dev>", // Usa el dominio que te proporciona Resend
@@ -79,7 +84,7 @@ export async function sendWelcomeEmail(email: string) {
       attachments: [
         {
           filename: "guia-soma-bienestar-digital.pdf",
-          path: process.env.GUIDE_PDF_URL,
+          content: fileBuffer.toString("base64"),
         },
       ],
     })
