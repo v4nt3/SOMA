@@ -8,9 +8,6 @@ import { ThumbsUp, ThumbsDown, Upload } from "lucide-react"
 import { motion } from "framer-motion"
 import { getVotes, updateVote } from "./actions/vote-actions"
 
-const FEATURE_ID = "grayscale-feature"
-const VOTE_STORAGE_KEY = "image-grayscale-voted"
-
 export function UploadImage() {
   const [image, setImage] = useState<string | null>(null)
   const [isGrayscale, setIsGrayscale] = useState(false)
@@ -20,32 +17,26 @@ export function UploadImage() {
   const [isLoading, setIsLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [mounted, setMounted] = useState(false)
+  const featureId = "soma-image-upload" // Unique identifier for this feature
 
-  // Check if user has already voted
   useEffect(() => {
-    const checkVoteStatus = () => {
-      const hasVotedBefore = localStorage.getItem(VOTE_STORAGE_KEY) === "true"
-      setHasVoted(hasVotedBefore)
-    }
+    setMounted(true)
 
     // Fetch initial vote counts
     const fetchVotes = async () => {
       try {
-        const votesData = await getVotes(FEATURE_ID)
-        setLikes(votesData.likes)
-        setDislikes(votesData.dislikes)
+        setIsLoading(true)
+        const { likes: initialLikes, dislikes: initialDislikes } = await getVotes(featureId)
+        setLikes(initialLikes)
+        setDislikes(initialDislikes)
       } catch (error) {
-        console.error("Error fetching votes:", error)
+        console.error("Failed to fetch votes:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    setMounted(true)
-    if (typeof window !== "undefined") {
-      checkVoteStatus()
-      fetchVotes()
-    }
+    fetchVotes()
   }, [])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +46,7 @@ export function UploadImage() {
       reader.onload = (event) => {
         setImage(event.target?.result as string)
         setIsGrayscale(false)
+        setHasVoted(false)
       }
       reader.readAsDataURL(file)
     }
@@ -66,18 +58,17 @@ export function UploadImage() {
 
   const handleLike = async () => {
     if (!hasVoted && !isLoading) {
+      setIsLoading(true)
       try {
-        setIsLoading(true)
-        const result = await updateVote(FEATURE_ID, "like")
-
+        const result = await updateVote(featureId, "like")
         if (result.success) {
-          setLikes(result.likes || likes + 1)
-          setDislikes(result.dislikes || dislikes)
+          setLikes(result.likes)
           setHasVoted(true)
-          localStorage.setItem(VOTE_STORAGE_KEY, "true")
+        } else {
+          console.error("Error updating like:", result.message)
         }
       } catch (error) {
-        console.error("Error updating like:", error)
+        console.error("Failed to update like:", error)
       } finally {
         setIsLoading(false)
       }
@@ -86,18 +77,17 @@ export function UploadImage() {
 
   const handleDislike = async () => {
     if (!hasVoted && !isLoading) {
+      setIsLoading(true)
       try {
-        setIsLoading(true)
-        const result = await updateVote(FEATURE_ID, "dislike")
-
+        const result = await updateVote(featureId, "dislike")
         if (result.success) {
-          setLikes(result.likes || likes)
-          setDislikes(result.dislikes || dislikes + 1)
+          setDislikes(result.dislikes)
           setHasVoted(true)
-          localStorage.setItem(VOTE_STORAGE_KEY, "true")
+        } else {
+          console.error("Error updating dislike:", result.message)
         }
       } catch (error) {
-        console.error("Error updating dislike:", error)
+        console.error("Failed to update dislike:", error)
       } finally {
         setIsLoading(false)
       }
@@ -111,7 +101,7 @@ export function UploadImage() {
   if (!mounted) {
     return (
       <div className="max-w-md mx-auto">
-        <div className="bg-card text-card-foreground rounded-xl shadow-lg overflow-hidden border border-border transition-colors duration-500">
+        <div className="bg-card text-card-foreground rounded-xl shadow-lg overflow-hidden border border-border">
           {/* Instagram-like header */}
           <div className="p-4 border-b border-border flex items-center">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold">
@@ -124,7 +114,7 @@ export function UploadImage() {
           </div>
 
           {/* Image display area */}
-          <div className="relative w-full h-96 bg-muted flex items-center justify-center cursor-pointer transition-colors duration-500">
+          <div className="relative w-full h-96 bg-muted flex items-center justify-center cursor-pointer">
             <div className="text-center p-6">
               <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-2 text-sm text-muted-foreground">Haz clic para subir una imagen</p>
@@ -141,7 +131,7 @@ export function UploadImage() {
   return (
     <div className="max-w-md mx-auto">
       <motion.div
-        className="bg-card text-card-foreground rounded-xl shadow-lg overflow-hidden border border-border transition-colors duration-500"
+        className="bg-card text-card-foreground rounded-xl shadow-lg overflow-hidden border border-border"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -163,7 +153,7 @@ export function UploadImage() {
 
         {/* Image display area */}
         <motion.div
-          className="relative w-full h-96 bg-muted flex items-center justify-center cursor-pointer transition-colors duration-500"
+          className="relative w-full h-96 bg-muted flex items-center justify-center cursor-pointer"
           onClick={triggerFileInput}
           layout
           transition={{ duration: 0.3 }}
@@ -227,7 +217,7 @@ export function UploadImage() {
                   whileHover={{ scale: hasVoted || isLoading ? 1 : 1.1 }}
                   whileTap={{ scale: hasVoted || isLoading ? 1 : 0.9 }}
                 >
-                  <ThumbsUp className={`h-6 w-6 ${hasVoted ? "text-muted-foreground" : "text-primary"}`} />
+                  <ThumbsUp className={`h-6 w-6 ${hasVoted || isLoading ? "text-muted-foreground" : "text-primary"}`} />
                   <span>{likes}</span>
                 </motion.button>
                 <motion.button
@@ -237,7 +227,9 @@ export function UploadImage() {
                   whileHover={{ scale: hasVoted || isLoading ? 1 : 1.1 }}
                   whileTap={{ scale: hasVoted || isLoading ? 1 : 0.9 }}
                 >
-                  <ThumbsDown className={`h-6 w-6 ${hasVoted ? "text-muted-foreground" : "text-foreground"}`} />
+                  <ThumbsDown
+                    className={`h-6 w-6 ${hasVoted || isLoading ? "text-muted-foreground" : "text-foreground"}`}
+                  />
                   <span>{dislikes}</span>
                 </motion.button>
               </motion.div>
