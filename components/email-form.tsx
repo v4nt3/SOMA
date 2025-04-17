@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Send, Check, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { sendWelcomeEmail } from "./actions/email-action"
 
 export function EmailForm() {
   const [email, setEmail] = useState("")
@@ -35,12 +36,22 @@ export function EmailForm() {
 
     setStatus("loading")
 
-    // Simulate API call
-    setTimeout(() => {
-      setStatus("success")
-      setMessage("¡Gracias! Hemos enviado la guía a tu correo electrónico.")
-      // In a real app, you would send the email to your backend here
-    }, 1500)
+    try {
+      // Llamar al Server Action para enviar el correo
+      const result = await sendWelcomeEmail(email)
+
+      if (result.success) {
+        setStatus("success")
+        setMessage(result.message)
+      } else {
+        setStatus("error")
+        setMessage(result.message)
+      }
+    } catch (error) {
+      console.error("Error sending email:", error)
+      setStatus("error")
+      setMessage("Error al enviar el correo. Por favor, intenta de nuevo.")
+    }
   }
 
   if (!mounted) {
