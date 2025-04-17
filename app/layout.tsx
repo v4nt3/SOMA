@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SOMA - Transforma tus hábitos de sueño",
+  title: "SOMA",
   description: "Transforma tus hábitos de sueño, transforma tu vida",
 }
 

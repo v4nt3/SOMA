@@ -36,7 +36,7 @@ export default function Home() {
       <section id="home" className="relative h-[100vh] flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/placeholder.svg?height=1080&width=1920"
+            src="/icon.png"
             alt="Fondo de SOMA"
             fill
             className="object-cover opacity-10"
