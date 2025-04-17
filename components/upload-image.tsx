@@ -75,8 +75,12 @@ export function UploadImage() {
         <div className="bg-card text-card-foreground rounded-xl shadow-lg overflow-hidden border border-border">
           {/* Instagram-like header */}
           <div className="p-4 border-b border-border flex items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold">
-              S
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-bold">
+              <img
+              src="/icon.png" 
+              alt="Logo de SOMA"
+              className="w-10 h-9 object-contain" 
+              />
             </div>
             <div className="ml-3">
               <p className="font-semibold">SOMA</p>
