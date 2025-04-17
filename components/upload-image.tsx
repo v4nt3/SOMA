@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Upload, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { ClientVote } from "./client-vote"
+import { useAnalytics } from "@/hooks/use-analytics"
 
 export function UploadImage() {
   const [image, setImage] = useState<string | null>(null)
@@ -14,7 +15,8 @@ export function UploadImage() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [mounted, setMounted] = useState(false)
-  const featureId = "soma-image-upload" // Unique identifier for this feature
+  const featureId = "soma-image-upload"
+  const { trackEvent } = useAnalytics()
 
   useEffect(() => {
     setMounted(true)
@@ -27,13 +29,40 @@ export function UploadImage() {
       reader.onload = (event) => {
         setImage(event.target?.result as string)
         setIsGrayscale(false)
+
+        // Rastrear evento de carga de imagen exitosa
+        trackEvent("image_upload", JSON.stringify({
+                  category: "engagement",
+                  label: "success",
+                  file_type: file.type,
+                  file_size: Math.round(file.size / 1024), // tamaño en KB
+                }))
       }
+
+      reader.onerror = () => {
+        setError("Error al cargar la imagen. Intenta con otra imagen.")
+
+        // Rastrear evento de error en carga de imagen
+        trackEvent("image_upload", JSON.stringify({
+                  category: "engagement",
+                  label: "error",
+                  error_type: "file_read_error",
+                }))
+      }
+
       reader.readAsDataURL(file)
     }
   }
 
   const toggleGrayscale = () => {
     setIsGrayscale(!isGrayscale)
+
+    // Rastrear evento de conversión a escala de grises
+    trackEvent("grayscale_toggle", JSON.stringify({
+          category: "feature_usage",
+          label: isGrayscale ? "disabled" : "enabled",
+          image_present: !!image,
+        }))
   }
 
   const triggerFileInput = () => {
@@ -47,11 +76,7 @@ export function UploadImage() {
           {/* Instagram-like header */}
           <div className="p-4 border-b border-border flex items-center">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold">
-            <img
-              src="/icon.png"
-              alt="Foto de perfil"
-              className="w-10 h-10 rounded-full object-cover"
-            />
+              S
             </div>
             <div className="ml-3">
               <p className="font-semibold">SOMA</p>
@@ -85,15 +110,11 @@ export function UploadImage() {
         {/* Instagram-like header */}
         <motion.div className="p-4 border-b border-border flex items-center" layout transition={{ duration: 0.3 }}>
           <motion.div
-            className="w-12 h-12 rounded-full flex items-center justify-center text-primary-foreground font-bold"
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold"
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <img
-              src="/icon.png"
-              alt="Foto de perfil"
-              className="w-9 h-10 rounded-full object-cover"
-            />
+            S
           </motion.div>
           <div className="ml-3">
             <p className="font-semibold">SOMA</p>

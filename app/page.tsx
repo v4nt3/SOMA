@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import { UploadImage } from "@/components/upload-image"
 import { EmailForm } from "@/components/email-form"
@@ -9,9 +9,14 @@ import { AboutSoma } from "@/components/about-soma"
 import { OpinionSection } from "@/components/opinion-section"
 import { Navbar } from "@/components/navbar"
 import { Features } from "@/components/features"
+import { useAnalytics } from "@/hooks/use-analytics"
+// Importar el nuevo hook
+import { useSectionTiming } from "@/hooks/use-section-timing"
 
 export default function Home() {
   const [mounted, setMounted] = useState(false)
+  const { trackEvent } = useAnalytics()
+  const sectionsTracked = useRef<Set<string>>(new Set())
 
   // Prevent transitions on initial load
   useEffect(() => {
@@ -27,16 +32,49 @@ export default function Home() {
     return () => clearTimeout(timeout)
   }, [])
 
+  // Track page view on mount
+  useEffect(() => {
+    if (mounted) {
+      trackEvent("Page View", "Navigation", window.location.pathname)
+
+      // Set up intersection observer to track when sections are viewed
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.target.id) {
+              const sectionId = entry.target.id
+              if (!sectionsTracked.current.has(sectionId)) {
+                trackEvent("Section View", "Navigation", sectionId)
+                sectionsTracked.current.add(sectionId)
+              }
+            }
+          })
+        },
+        { threshold: 0.5 }, // Section is considered viewed when 50% visible
+      )
+
+      // Observe all sections
+      document.querySelectorAll("section[id]").forEach((section) => {
+        observer.observe(section)
+      })
+
+      return () => observer.disconnect()
+    }
+  }, [mounted])
+
+  // Usar el hook para rastrear el tiempo en secciones
+  useSectionTiming()
+
   return (
     <main className="min-h-screen bg-background">
       {/* Navbar */}
       <Navbar />
 
       {/* Hero Section */}
-      <section id="home" className="relative h-[118vh] flex items-center justify-center overflow-hidden pt-16">
+      <section id="home" className="relative h-[100vh] flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/icon.png"
+            src="/placeholder.svg?height=1080&width=1920"
             alt="Fondo de SOMA"
             fill
             className="object-cover opacity-10"
