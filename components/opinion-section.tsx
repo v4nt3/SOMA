@@ -16,10 +16,10 @@ export function OpinionSection() {
     return (
       <section className="py-16 bg-primary/10 text-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Tu opinión es importante</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ayúdanos a mejorar SOMA</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-10">
-            Ayúdanos a mejorar SOMA compartiendo tu experiencia y sugerencias. Tu feedback nos permite crear una mejor
-            herramienta para todos.
+            Estamos desarrollando SOMA para ayudarte a mejorar tu relación con la tecnología. Tu feedback nos permite
+            crear una mejor herramienta que realmente impacte en tu bienestar digital.
           </p>
 
           <a
@@ -37,7 +37,7 @@ export function OpinionSection() {
               <div className="bg-card px-8 py-4 rounded-lg flex items-center">
                 <MessageSquare className="h-6 w-6 mr-3 text-secondary" />
                 <span className="font-semibold text-lg bg-gradient-to-r from-primary via-secondary to-[#FFECCC] bg-clip-text text-transparent">
-                  Colabora con nosotros
+                  Comparte tu opinión
                 </span>
               </div>
             </div>
@@ -55,11 +55,11 @@ export function OpinionSection() {
           layout
           transition={{ duration: 0.5, type: "spring" }}
         >
-          Tu opinión es importante
+          Ayúdanos a mejorar SOMA
         </motion.h2>
         <motion.p className="text-muted-foreground max-w-2xl mx-auto mb-10" layout transition={{ duration: 0.5 }}>
-          Ayúdanos a mejorar SOMA compartiendo tu experiencia y sugerencias. Tu feedback nos permite crear una mejor
-          herramienta para todos.
+          Estamos desarrollando SOMA para ayudarte a mejorar tu relación con la tecnología. Tu feedback nos permite
+          crear una mejor herramienta que realmente impacte en tu bienestar digital.
         </motion.p>
 
         <motion.a
@@ -87,7 +87,7 @@ export function OpinionSection() {
             <div className="bg-card px-8 py-4 rounded-lg flex items-center">
               <MessageSquare className="h-6 w-6 mr-3 text-secondary" />
               <span className="font-semibold text-lg bg-gradient-to-r from-primary via-secondary to-[#FFECCC] bg-clip-text text-transparent">
-                Colabora con nosotros
+                Comparte tu opinión
               </span>
             </div>
           </motion.div>

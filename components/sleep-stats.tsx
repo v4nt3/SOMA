@@ -26,10 +26,10 @@ export function SleepStats() {
   }, [])
 
   const stats = [
-    { value: "70%", description: "de los jóvenes reportan problemas para dormir" },
+    { value: "70%", description: "de los jóvenes usan el celular antes de dormir" },
     { value: "6.5h", description: "es el promedio de sueño en jóvenes (recomendado: 8h)" },
-    { value: "45%", description: "usan el celular justo antes de dormir" },
-    { value: "3x", description: "mayor riesgo de depresión con mal sueño" },
+    { value: "60%", description: "reporta que la luz azul afecta su calidad de sueño" },
+    { value: "2h+", description: "de uso nocturno del celular aumenta el insomnio" },
   ]
 
   if (!mounted) {
@@ -37,7 +37,7 @@ export function SleepStats() {
       <section id="stats-section" className="py-16 bg-primary/5 text-foreground">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            El insomnio en jóvenes: una realidad alarmante
+            El uso del celular y el insomnio: una realidad alarmante
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -60,7 +60,7 @@ export function SleepStats() {
           layout
           transition={{ duration: 0.5, type: "spring" }}
         >
-          El insomnio en jóvenes: una realidad alarmante
+          El uso del celular y el insomnio: una realidad alarmante
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
