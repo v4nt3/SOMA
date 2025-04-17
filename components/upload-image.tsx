@@ -47,7 +47,11 @@ export function UploadImage() {
           {/* Instagram-like header */}
           <div className="p-4 border-b border-border flex items-center">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold">
-              S
+            <img
+              src="/icon.png"
+              alt="Foto de perfil"
+              className="w-10 h-10 rounded-full object-cover"
+            />
             </div>
             <div className="ml-3">
               <p className="font-semibold">SOMA</p>
