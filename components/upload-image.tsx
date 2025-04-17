@@ -114,11 +114,15 @@ export function UploadImage() {
         {/* Instagram-like header */}
         <motion.div className="p-4 border-b border-border flex items-center" layout transition={{ duration: 0.3 }}>
           <motion.div
-            className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold"
+            className="w-10 h-10 rounded-full  flex items-center justify-center text-primary-foreground font-bold"
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            S
+            <img
+            src="/icon.png" 
+            alt="Logo de SOMA"
+            className="w-10 h-9 object-contain" 
+          />
           </motion.div>
           <div className="ml-3">
             <p className="font-semibold">SOMA</p>
