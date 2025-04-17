@@ -33,7 +33,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section id="home" className="relative h-[116vh] flex items-center justify-center overflow-hidden pt-16">
+      <section id="home" className="relative h-[118vh] flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <Image
             src="/icon.png"
