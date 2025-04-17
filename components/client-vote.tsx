@@ -78,24 +78,30 @@ export function ClientVote({ featureId }: { featureId: string }) {
         .eq("feature_id", featureId)
         .single()
 
+      let currentLikes = 0
+      let currentDislikes = 0
+
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError
       }
 
-      const currentLikes = data?.likes || 0
-      const currentDislikes = data?.dislikes || 0
+      if (data) {
+        currentLikes = data.likes || 0
+        currentDislikes = data.dislikes || 0
+      }
 
-      // Update votes
-      const updates = voteType === "like" ? { likes: currentLikes + 1 } : { dislikes: currentDislikes + 1 }
+      // Prepare update data
+      const updates = {
+        feature_id: featureId,
+        likes: voteType === "like" ? currentLikes + 1 : currentLikes,
+        dislikes: voteType === "dislike" ? currentDislikes + 1 : currentDislikes,
+      }
 
-      const { error: updateError } = await supabase.from("image_votes").upsert(
-        {
-          feature_id: featureId,
-          ...updates,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "feature_id" },
-      )
+      // Update votes with proper upsert
+      const { error: updateError } = await supabase.from("image_votes").upsert(updates, {
+        onConflict: "feature_id",
+        ignoreDuplicates: false,
+      })
 
       if (updateError) {
         throw updateError

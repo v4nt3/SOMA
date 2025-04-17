@@ -9,14 +9,6 @@ export async function getVotes(featureId: string) {
     console.log("Getting votes for feature:", featureId)
     const supabase = createServerSupabaseClient()
 
-    // Test connection
-    const { data: testData, error: testError } = await supabase.from("image_votes").select("count(*)").limit(1)
-    if (testError) {
-      console.error("Supabase connection test failed:", testError)
-      return { likes: 0, dislikes: 0 }
-    }
-    console.log("Supabase connection test succeeded:", testData)
-
     const { data, error } = await supabase
       .from("image_votes")
       .select("likes, dislikes")
@@ -78,12 +70,15 @@ export async function updateVote(featureId: string, voteType: VoteType) {
       feature_id: featureId,
       likes: voteType === "like" ? currentLikes + 1 : currentLikes,
       dislikes: voteType === "dislike" ? currentDislikes + 1 : currentDislikes,
-      updated_at: new Date().toISOString(),
     }
 
-    console.log("Updates prepared:", updates)
-    // Update the votes
-    const { data: updateData, error: updateError } = await supabase.from("image_votes").upsert(updates).select()
+    console.log("Preparing to upsert with data:", updates)
+
+    // Use proper upsert with onConflict option
+    const { error: updateError } = await supabase.from("image_votes").upsert(updates, {
+      onConflict: "feature_id",
+      ignoreDuplicates: false,
+    })
 
     if (updateError) {
       console.error("Error updating votes:", updateError.message, updateError.details, updateError.hint)
@@ -95,7 +90,7 @@ export async function updateVote(featureId: string, voteType: VoteType) {
       }
     }
 
-    console.log("Successfully updated votes:", updateData)
+    console.log("Successfully updated votes")
 
     // Return the updated counts
     return {

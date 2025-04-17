@@ -4,17 +4,13 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
-import { ThumbsUp, ThumbsDown, Upload, AlertCircle } from "lucide-react"
+import { Upload, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
-import { getVotes, updateVote } from "./actions/vote-actions"
+import { ClientVote } from "./client-vote"
 
 export function UploadImage() {
   const [image, setImage] = useState<string | null>(null)
   const [isGrayscale, setIsGrayscale] = useState(false)
-  const [likes, setLikes] = useState(0)
-  const [dislikes, setDislikes] = useState(0)
-  const [hasVoted, setHasVoted] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [mounted, setMounted] = useState(false)
@@ -22,24 +18,6 @@ export function UploadImage() {
 
   useEffect(() => {
     setMounted(true)
-
-    // Fetch initial vote counts
-    const fetchVotes = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const { likes: initialLikes, dislikes: initialDislikes } = await getVotes(featureId)
-        setLikes(initialLikes)
-        setDislikes(initialDislikes)
-      } catch (error) {
-        console.error("Failed to fetch votes:", error)
-        setError("No se pudieron cargar los votos. Inténtalo de nuevo más tarde.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchVotes()
   }, [])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +27,6 @@ export function UploadImage() {
       reader.onload = (event) => {
         setImage(event.target?.result as string)
         setIsGrayscale(false)
-        setHasVoted(false)
       }
       reader.readAsDataURL(file)
     }
@@ -57,50 +34,6 @@ export function UploadImage() {
 
   const toggleGrayscale = () => {
     setIsGrayscale(!isGrayscale)
-  }
-
-  const handleLike = async () => {
-    if (!hasVoted && !isLoading) {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const result = await updateVote(featureId, "like")
-        if (result.success) {
-          setLikes(result.likes)
-          setHasVoted(true)
-        } else {
-          console.error("Error updating like:", result.message)
-          setError("No se pudo registrar tu voto. Inténtalo de nuevo más tarde.")
-        }
-      } catch (error) {
-        console.error("Failed to update like:", error)
-        setError("Ocurrió un error al procesar tu voto. Inténtalo de nuevo más tarde.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-  }
-
-  const handleDislike = async () => {
-    if (!hasVoted && !isLoading) {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const result = await updateVote(featureId, "dislike")
-        if (result.success) {
-          setDislikes(result.dislikes)
-          setHasVoted(true)
-        } else {
-          console.error("Error updating dislike:", result.message)
-          setError("No se pudo registrar tu voto. Inténtalo de nuevo más tarde.")
-        }
-      } catch (error) {
-        console.error("Failed to update dislike:", error)
-        setError("Ocurrió un error al procesar tu voto. Inténtalo de nuevo más tarde.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
   }
 
   const triggerFileInput = () => {
@@ -226,35 +159,8 @@ export function UploadImage() {
                 </motion.button>
               </div>
 
-              <motion.div
-                className="flex justify-center space-x-8"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
-              >
-                <motion.button
-                  onClick={handleLike}
-                  className={`flex items-center space-x-2 ${(hasVoted || isLoading) && "opacity-50 cursor-not-allowed"}`}
-                  disabled={hasVoted || isLoading}
-                  whileHover={{ scale: hasVoted || isLoading ? 1 : 1.1 }}
-                  whileTap={{ scale: hasVoted || isLoading ? 1 : 0.9 }}
-                >
-                  <ThumbsUp className={`h-6 w-6 ${hasVoted || isLoading ? "text-muted-foreground" : "text-primary"}`} />
-                  <span>{likes}</span>
-                </motion.button>
-                <motion.button
-                  onClick={handleDislike}
-                  className={`flex items-center space-x-2 ${(hasVoted || isLoading) && "opacity-50 cursor-not-allowed"}`}
-                  disabled={hasVoted || isLoading}
-                  whileHover={{ scale: hasVoted || isLoading ? 1 : 1.1 }}
-                  whileTap={{ scale: hasVoted || isLoading ? 1 : 0.9 }}
-                >
-                  <ThumbsDown
-                    className={`h-6 w-6 ${hasVoted || isLoading ? "text-muted-foreground" : "text-foreground"}`}
-                  />
-                  <span>{dislikes}</span>
-                </motion.button>
-              </motion.div>
+              {/* Use the client-side vote component */}
+              <ClientVote featureId={featureId} />
             </motion.div>
           )}
         </div>
