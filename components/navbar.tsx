@@ -104,22 +104,29 @@ export function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border transition-colors duration-500">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <motion.div
-            className="flex items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+        <motion.div
+          className="flex items-center space-x-2" 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <img
+            src="/icon.png" 
+            alt="Logo de SOMA"
+            className="w-10 h-9 object-contain" 
+          />
+
+          <motion.span
+            className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            onClick={() => scrollToSection("home")}
+            style={{ cursor: "pointer" }}
           >
-            <motion.span
-              className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              onClick={() => scrollToSection("home")}
-              style={{ cursor: "pointer" }}
-            >
-              SOMA
-            </motion.span>
-          </motion.div>
+            SOMA
+          </motion.span>
+        </motion.div>
+
 
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
