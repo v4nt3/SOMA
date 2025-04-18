@@ -1,8 +1,5 @@
 "use server"
 
-const SibApiV3Sdk = require('sib-api-v3-sdk');
-
-
 export async function sendWelcomeEmail(email: string) {
   try {
     // Validar el email
@@ -11,19 +8,8 @@ export async function sendWelcomeEmail(email: string) {
       return { success: false, message: "Correo electrónico inválido" }
     }
 
-    // Configurar el cliente de Brevo
-    const defaultClient = SibApiV3Sdk.ApiClient.instance
-    const apiKey = defaultClient.authentications["api-key"]
-    apiKey.apiKey = process.env.BREVO_API_KEY
-
-    // Crear la instancia de la API
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
-
-    // Crear el objeto de envío
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
-
-    sendSmtpEmail.subject = "Tu guía gratuita de SOMA"
-    sendSmtpEmail.htmlContent = `
+    // Construir el contenido del correo
+    const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #6366F1;">¡Gracias por unirte a SOMA!</h1>
         <p>Nos alegra que estés interesado en mejorar tu bienestar digital.</p>
@@ -42,15 +28,34 @@ export async function sendWelcomeEmail(email: string) {
         </div>
       </div>
     `
-    sendSmtpEmail.sender = { name: "SOMA", email: process.env.BREVO_FROM_EMAIL || "noreply@example.com" }
-    sendSmtpEmail.to = [{ email }]
 
-    // Enviar el correo
-    await apiInstance.sendTransacEmail(sendSmtpEmail)
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": process.env.BREVO_API_KEY!,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "SOMA",
+          email: process.env.BREVO_FROM_EMAIL || "noreply@example.com"
+        },
+        to: [{ email }],
+        subject: "Tu guía gratuita de SOMA",
+        htmlContent
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Respuesta de Brevo:", errorText)
+      throw new Error("Error en la API de Brevo")
+    }
 
     return { success: true, message: "¡Gracias! Hemos enviado la guía a tu correo electrónico." }
   } catch (error) {
-    console.error("Error sending email:", error)
+    console.error("Error al enviar correo:", error)
     return { success: false, message: "Error al enviar el correo. Por favor, intenta de nuevo." }
   }
 }
