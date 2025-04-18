@@ -2,22 +2,18 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Send, Check, AlertCircle, Download } from "lucide-react"
 import { motion } from "framer-motion"
 import { sendWelcomeEmail } from "@/components/actions/email-brevo"
-import { useAnalytics } from "@/hooks/use-analytics"
+import { sendSimpleEmail } from "@/components/actions/email-brevo-simple"
 
 export function EmailForm() {
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "direct-download">("idle")
   const [message, setMessage] = useState("")
-  const [mounted, setMounted] = useState(false)
-  const { trackEvent } = useAnalytics?.() || { trackEvent: () => {} }
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const [debugInfo, setDebugInfo] = useState<string | null>(null)
+  const [showDebug, setShowDebug] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +21,6 @@ export function EmailForm() {
     if (!email) {
       setStatus("error")
       setMessage("Por favor, ingresa tu correo electrónico")
-      trackEvent?.("Email Submission", "Form", "Failure")
       return
     }
 
@@ -34,45 +29,44 @@ export function EmailForm() {
     if (!emailRegex.test(email)) {
       setStatus("error")
       setMessage("Por favor, ingresa un correo electrónico válido")
-      trackEvent?.("Email Submission", "Form", "Failure")
-
       return
     }
 
     setStatus("loading")
+    setDebugInfo(null)
 
-  }
+    try {
+      // Primero intentamos con el email completo
+      const result = await sendWelcomeEmail(email)
 
-  if (!mounted) {
-    return (
-      <div className="max-w-md mx-auto">
-        <form className="bg-card text-card-foreground p-6 rounded-xl shadow-md transition-colors duration-500 border border-border">
-          <div className="mb-4">
-            <label htmlFor="email-static" className="block text-sm font-medium mb-1">
-              Correo electrónico
-            </label>
-            <input
-              type="email"
-              id="email-static"
-              placeholder="tu@email.com"
-              className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-500"
-            />
-          </div>
+      if (result.success) {
+        setStatus("success")
+        setMessage(result.message)
+      } else {
+        console.log("Primer intento fallido, probando con email simple")
 
-          <button
-            type="button"
-            className="w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-colors duration-300 bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Send className="mr-2 h-4 w-4" />
-            Recibir guía gratuita
-          </button>
+        // Si falla, intentamos con el email simple
+        const simpleResult = await sendSimpleEmail(email)
 
-          <p className="mt-3 text-xs text-muted-foreground text-center">
-            Al enviar tu correo, aceptas recibir comunicaciones de SOMA. Puedes darte de baja en cualquier momento.
-          </p>
-        </form>
-      </div>
-    )
+        if (simpleResult.success) {
+          setStatus("success")
+          setMessage("¡Gracias! Hemos enviado la guía a tu correo electrónico.")
+        } else {
+          // Si ambos fallan, mostramos opción de descarga directa
+          setStatus("direct-download")
+          setMessage("No pudimos enviar el correo, pero puedes descargar la guía directamente:")
+
+          if (simpleResult.error) {
+            setDebugInfo(simpleResult.error)
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error sending email:", error)
+      setStatus("direct-download")
+      setMessage("Error al enviar el correo. Puedes descargar la guía directamente:")
+      setDebugInfo(String(error))
+    }
   }
 
   return (
@@ -139,14 +133,35 @@ export function EmailForm() {
           >
             <p className="mb-3 text-center">{message}</p>
             <a
-              href={process.env.NEXT_PUBLIC_GUIDE_PDF_URL || "/api/download-guide"}
+              href={process.env.NEXT_PUBLIC_GUIDE_PDF_URL || "/guia.pdf"}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
+              onClick={() => {
+                // Aquí podrías registrar la descarga directa si tienes analytics
+              }}
             >
               <Download className="mr-2 h-4 w-4" />
               Descargar Guía PDF
             </a>
+
+            {debugInfo && (
+              <div className="mt-4 w-full">
+                <button
+                  type="button"
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="text-xs underline text-muted-foreground"
+                >
+                  {showDebug ? "Ocultar detalles técnicos" : "Mostrar detalles técnicos"}
+                </button>
+
+                {showDebug && (
+                  <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto max-h-40 text-muted-foreground">
+                    {debugInfo}
+                  </pre>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -184,7 +199,7 @@ export function EmailForm() {
           ) : status === "success" || status === "direct-download" ? (
             <>
               <Check className="mr-2 h-4 w-4" />
-              Enviado
+              {status === "success" ? "Enviado" : "Descarga disponible"}
             </>
           ) : (
             <>
@@ -201,4 +216,3 @@ export function EmailForm() {
     </div>
   )
 }
-
