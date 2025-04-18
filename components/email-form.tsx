@@ -227,7 +227,4 @@ export function EmailForm() {
     </div>
   )
 }
-function trackEmailSubmission(arg0: boolean) {
-  throw new Error("Function not implemented.")
-}
 
