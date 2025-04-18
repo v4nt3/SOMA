@@ -1,5 +1,5 @@
 export const emailTemplates = {
-  welcome: (userName: string) => `
+  welcome: ({ userName, downloadUrl }: { userName: string; downloadUrl: string }) => `
 <!DOCTYPE html>
 <html lang="es">
 <head>

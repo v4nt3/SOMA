@@ -3,7 +3,6 @@
 import { emailTemplates } from "@/lib/email-templates"
 
 export async function sendWelcomeEmail(email: string) {
-    const htmlContent = emailTemplates.welcome(email)
 
   try {
     // Validar el email
@@ -11,6 +10,12 @@ export async function sendWelcomeEmail(email: string) {
     if (!emailRegex.test(email)) {
       return { success: false, message: "Correo electrónico inválido" }
     }
+
+    // Obtener el template HTML personalizado
+    const htmlContent = emailTemplates.welcome({
+        userName: email.split("@")[0], // Extraer nombre del email como ejemplo
+        downloadUrl: process.env.GUIDE_PDF_URL || "",
+      })
 
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",

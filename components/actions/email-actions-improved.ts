@@ -21,7 +21,7 @@ export async function sendWelcomeEmail(email: string, name?: string) {
       from: "SOMA <onboarding@resend.dev>",
       to: email,
       subject: "Tu guía gratuita de SOMA",
-      html: emailTemplates.welcome(userName),
+      html: emailTemplates.welcome({ userName, downloadUrl: process.env.GUIDE_PDF_URL || "" }),
       attachments: [
         {
           filename: "guia-soma-bienestar-digital.pdf",
