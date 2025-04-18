@@ -41,32 +41,6 @@ export function EmailForm() {
 
     setStatus("loading")
 
-    try {
-      // Llamar a la acción del servidor para enviar el correo
-      const result: { success: boolean; message: string; directDownload?: boolean } = await sendWelcomeEmail(email)
-
-      if (result.success) {
-        setStatus("success")
-        setMessage(result.message)
-        trackEvent?.("Email Submission", "Form", "Success")
-      } else if (result.directDownload) {
-        // Si no se pudo enviar el correo pero ofrecemos descarga directa
-        setStatus("direct-download")
-        setMessage(result.message)
-        trackEvent?.("Email Submission", "Form", "Success")
-      } else {
-        setStatus("error")
-        setMessage(result.message)
-        trackEvent?.("Email Submission", "Form", "Failure")
-
-      }
-    } catch (error) {
-      console.error("Error sending email:", error)
-      setStatus("error")
-      setMessage("Error al enviar el correo. Por favor, intenta de nuevo.")
-      trackEvent?.("Email Submission", "Form", "Failure")
-
-    }
   }
 
   if (!mounted) {
