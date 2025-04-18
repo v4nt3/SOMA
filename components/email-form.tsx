@@ -50,7 +50,7 @@ export function EmailForm() {
 
         if (simpleResult.success) {
           setStatus("success")
-          setMessage("¡Gracias! Hemos enviado la guía a tu correo electrónico.")
+          setMessage("¡Gracias! Hemos enviado la guía a tu correo electrónico, revisa el SPAM")
         } else {
           // Si ambos fallan, mostramos opción de descarga directa
           setStatus("direct-download")
