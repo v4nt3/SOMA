@@ -34,7 +34,8 @@ export function EmailForm() {
     if (!emailRegex.test(email)) {
       setStatus("error")
       setMessage("Por favor, ingresa un correo electrónico válido")
-      trackEmailSubmission?.(false)
+      trackEvent?.("Email Submission", "Form", "Failure")
+
       return
     }
 
@@ -52,17 +53,19 @@ export function EmailForm() {
         // Si no se pudo enviar el correo pero ofrecemos descarga directa
         setStatus("direct-download")
         setMessage(result.message)
-        trackEmailSubmission?.(true) // Consideramos esto como un éxito para analytics
+        trackEvent?.("Email Submission", "Form", "Success")
       } else {
         setStatus("error")
         setMessage(result.message)
-        trackEmailSubmission?.(false)
+        trackEvent?.("Email Submission", "Form", "Failure")
+
       }
     } catch (error) {
       console.error("Error sending email:", error)
       setStatus("error")
       setMessage("Error al enviar el correo. Por favor, intenta de nuevo.")
-      trackEmailSubmission?.(false)
+      trackEvent?.("Email Submission", "Form", "Failure")
+
     }
   }
 
