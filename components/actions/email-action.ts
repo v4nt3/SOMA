@@ -3,7 +3,6 @@
 import { Resend } from "resend"
 import { emailTemplates } from "@/lib/email-templates"
 import { createClient } from "@supabase/supabase-js"
-import { trackServerEvent } from "@/lib/analytics-server"
 
 // Inicializar Resend con la API key
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -33,16 +32,6 @@ async function logEmailSent(email: string, success: boolean, errorMessage?: stri
     if (error) {
       console.error("Error inserting email log:", error)
     }
-
-    // Rastrear evento en Google Analytics
-    await trackServerEvent({
-      name: success ? "email_sent" : "email_failed",
-      params: {
-        email_type: "welcome_guide",
-        email_domain: email.split("@")[1],
-        error: errorMessage || null,
-      },
-    })
   } catch (logError) {
     console.error("Error logging email:", logError)
   }
@@ -50,14 +39,6 @@ async function logEmailSent(email: string, success: boolean, errorMessage?: stri
 
 export async function sendWelcomeEmail(email: string) {
   try {
-    // Añadir logs para depuración
-    console.log("==== EMAIL SENDING DEBUG ====")
-    console.log("Email address:", email)
-    console.log("RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY)
-    console.log("GUIDE_PDF_URL exists:", !!process.env.GUIDE_PDF_URL)
-    console.log("GUIDE_PDF_URL value:", process.env.GUIDE_PDF_URL)
-    console.log("===========================")
-
     // Validar el email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
@@ -94,16 +75,6 @@ export async function sendWelcomeEmail(email: string) {
 
         if (data && data.length > 0) {
           console.log("Email already sent to:", email)
-
-          // Rastrear evento de correo duplicado
-          await trackServerEvent({
-            name: "email_duplicate",
-            params: {
-              email_type: "welcome_guide",
-              email_domain: email.split("@")[1],
-            },
-          })
-
           return { success: true, message: "¡Ya te enviamos la guía anteriormente! Revisa tu correo electrónico." }
         }
       } catch (checkError) {
@@ -111,37 +82,61 @@ export async function sendWelcomeEmail(email: string) {
       }
     }
 
-    console.log("Sending email with Resend...")
+    // Intentar enviar el correo sin adjuntos primero
+    try {
+      const { data, error } = await resend.emails.send({
+        from: "SOMA <onboarding@resend.dev>",
+        to: email,
+        subject: "Tu guía gratuita de SOMA",
+        html: emailTemplates.welcome(userName),
+        // Sin adjuntos por ahora
+      })
 
-    // Enviar el correo usando Resend
+      if (error) {
+        console.error("Error sending email with Resend:", error)
+        await logEmailSent(email, false, error.message)
+        return { success: false, message: "Error al enviar el correo. Por favor, intenta de nuevo." }
+      }
+
+      console.log("Email sent successfully:", data)
+
+      // Registrar el envío exitoso
+      await logEmailSent(email, true)
+
+      return { success: true, message: "¡Gracias! Hemos enviado la guía a tu correo electrónico." }
+    } catch (error) {
+      console.error("Unexpected error in sendWelcomeEmail:", error)
+      await logEmailSent(email, false, (error as Error).message)
+      return { success: false, message: "Error inesperado. Por favor, intenta de nuevo." }
+    }
+  } catch (error) {
+    console.error("Unexpected error in sendWelcomeEmail:", error)
+    return { success: false, message: "Error inesperado. Por favor, intenta de nuevo." }
+  }
+}
+
+// Versión simplificada para pruebas
+export async function sendSimpleEmail(email: string) {
+  try {
+    if (!process.env.RESEND_API_KEY) {
+      return { success: false, message: "Falta RESEND_API_KEY" }
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY)
+
     const { data, error } = await resend.emails.send({
-      from: "SOMA <onboarding@resend.dev>", // Usa el dominio que te proporciona Resend
+      from: "SOMA <onboarding@resend.dev>",
       to: email,
-      subject: "Tu guía gratuita de SOMA",
-      html: emailTemplates.welcome(userName),
-      attachments: [
-        {
-          filename: "guia-soma-bienestar-digital.pdf",
-          path: process.env.GUIDE_PDF_URL,
-        },
-      ],
+      subject: "Prueba de SOMA",
+      html: "<p>Este es un correo de prueba.</p>",
     })
 
     if (error) {
-      console.error("Error sending email with Resend:", error)
-      await logEmailSent(email, false, error.message)
-      return { success: false, message: "Error al enviar el correo. Por favor, intenta de nuevo." }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
-    console.log("Email sent successfully:", data)
-
-    // Registrar el envío exitoso
-    await logEmailSent(email, true)
-
-    return { success: true, message: "¡Gracias! Hemos enviado la guía a tu correo electrónico." }
+    return { success: true, message: "Correo enviado correctamente" }
   } catch (error) {
-    console.error("Unexpected error in sendWelcomeEmail:", error)
-    await logEmailSent(email, false, (error as Error).message)
-    return { success: false, message: "Error inesperado. Por favor, intenta de nuevo." }
+    return { success: false, message: `Error: ${error instanceof Error ? error.message : String(error)}` }
   }
 }
