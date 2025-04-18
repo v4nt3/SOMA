@@ -3,6 +3,7 @@
 import { Resend } from "resend"
 import { emailTemplates } from "@/lib/email-templates"
 import { createClient } from "@supabase/supabase-js"
+import { trackServerEvent } from "@/lib/analytics-server"
 
 // Inicializar Resend con la API key
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -32,6 +33,16 @@ async function logEmailSent(email: string, success: boolean, errorMessage?: stri
     if (error) {
       console.error("Error inserting email log:", error)
     }
+
+    // Rastrear evento en Google Analytics
+    await trackServerEvent({
+      name: success ? "email_sent" : "email_failed",
+      params: {
+        email_type: "welcome_guide",
+        email_domain: email.split("@")[1],
+        error: errorMessage || null,
+      },
+    })
   } catch (logError) {
     console.error("Error logging email:", logError)
   }
@@ -83,6 +94,16 @@ export async function sendWelcomeEmail(email: string) {
 
         if (data && data.length > 0) {
           console.log("Email already sent to:", email)
+
+          // Rastrear evento de correo duplicado
+          await trackServerEvent({
+            name: "email_duplicate",
+            params: {
+              email_type: "welcome_guide",
+              email_domain: email.split("@")[1],
+            },
+          })
+
           return { success: true, message: "¡Ya te enviamos la guía anteriormente! Revisa tu correo electrónico." }
         }
       } catch (checkError) {

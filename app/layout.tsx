@@ -8,7 +8,6 @@ import { CookieConsent } from "@/components/cookie-consent"
 
 const inter = Inter({ subsets: ["latin"] })
 
-// Reemplaza esto con tu ID de medición de Google Analytics
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-5HNS6BK2QX"
 
 export const metadata: Metadata = {
