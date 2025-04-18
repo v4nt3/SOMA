@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Send, Check, AlertCircle, Download } from "lucide-react"
 import { motion } from "framer-motion"
-import { sendWelcomeEmail } from "@/components/actions/email-action"
+import { sendWelcomeEmail } from "@/components/actions/email-sendgrid"
 import { useAnalytics } from "@/hooks/use-analytics"
 
 export function EmailForm() {
@@ -42,7 +42,7 @@ export function EmailForm() {
 
     try {
       // Llamar a la acción del servidor para enviar el correo
-      const result = await sendWelcomeEmail(email)
+      const result: { success: boolean; message: string; directDownload?: boolean } = await sendWelcomeEmail(email)
 
       if (result.success) {
         setStatus("success")
