@@ -133,7 +133,7 @@ export function EmailForm() {
           >
             <p className="mb-3 text-center">{message}</p>
             <a
-              href={process.env.NEXT_PUBLIC_GUIDE_PDF_URL || "/guia.pdf"}
+              href={process.env.GUIDE_PDF_URL || "/guia.pdf"}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
