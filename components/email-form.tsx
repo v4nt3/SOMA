@@ -3,15 +3,17 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Send, Check, AlertCircle } from "lucide-react"
+import { Send, Check, AlertCircle, Download } from "lucide-react"
 import { motion } from "framer-motion"
-import { sendWelcomeEmail } from "./actions/email-action"
+import { sendWelcomeEmail } from "@/components/actions/email-action"
+import { useAnalytics } from "@/hooks/use-analytics"
 
 export function EmailForm() {
   const [email, setEmail] = useState("")
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "direct-download">("idle")
   const [message, setMessage] = useState("")
   const [mounted, setMounted] = useState(false)
+  const { trackEvent } = useAnalytics?.() || { trackEvent: () => {} }
 
   useEffect(() => {
     setMounted(true)
@@ -23,6 +25,7 @@ export function EmailForm() {
     if (!email) {
       setStatus("error")
       setMessage("Por favor, ingresa tu correo electrónico")
+      trackEvent?.("Email Submission", "Form", "Failure")
       return
     }
 
@@ -31,26 +34,35 @@ export function EmailForm() {
     if (!emailRegex.test(email)) {
       setStatus("error")
       setMessage("Por favor, ingresa un correo electrónico válido")
+      trackEmailSubmission?.(false)
       return
     }
 
     setStatus("loading")
 
     try {
-      // Llamar al Server Action para enviar el correo
+      // Llamar a la acción del servidor para enviar el correo
       const result = await sendWelcomeEmail(email)
 
       if (result.success) {
         setStatus("success")
         setMessage(result.message)
+        trackEvent?.("Email Submission", "Form", "Success")
+      } else if (result.directDownload) {
+        // Si no se pudo enviar el correo pero ofrecemos descarga directa
+        setStatus("direct-download")
+        setMessage(result.message)
+        trackEmailSubmission?.(true) // Consideramos esto como un éxito para analytics
       } else {
         setStatus("error")
         setMessage(result.message)
+        trackEmailSubmission?.(false)
       }
     } catch (error) {
       console.error("Error sending email:", error)
       setStatus("error")
       setMessage("Error al enviar el correo. Por favor, intenta de nuevo.")
+      trackEmailSubmission?.(false)
     }
   }
 
@@ -111,7 +123,7 @@ export function EmailForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
             className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-500"
-            disabled={status === "loading" || status === "success"}
+            disabled={status === "loading" || status === "success" || status === "direct-download"}
             layout
             transition={{ duration: 0.3 }}
           />
@@ -141,16 +153,38 @@ export function EmailForm() {
           </motion.div>
         )}
 
+        {status === "direct-download" && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.3 }}
+            className="mb-4 p-3 bg-primary/10 text-primary rounded-lg flex flex-col items-center overflow-hidden"
+          >
+            <p className="mb-3 text-center">{message}</p>
+            <a
+              href={process.env.NEXT_PUBLIC_GUIDE_PDF_URL || "/api/download-guide"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Descargar Guía PDF
+            </a>
+          </motion.div>
+        )}
+
         <motion.button
           type="submit"
-          disabled={status === "loading" || status === "success"}
+          disabled={status === "loading" || status === "success" || status === "direct-download"}
           className={`w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-colors duration-300 ${
-            status === "loading" || status === "success"
+            status === "loading" || status === "success" || status === "direct-download"
               ? "bg-muted text-muted-foreground cursor-not-allowed"
               : "bg-primary hover:bg-primary/90 text-primary-foreground"
           }`}
-          whileHover={{ scale: status === "loading" || status === "success" ? 1 : 1.02 }}
-          whileTap={{ scale: status === "loading" || status === "success" ? 1 : 0.98 }}
+          whileHover={{
+            scale: status === "loading" || status === "success" || status === "direct-download" ? 1 : 1.02,
+          }}
+          whileTap={{ scale: status === "loading" || status === "success" || status === "direct-download" ? 1 : 0.98 }}
           layout
         >
           {status === "loading" ? (
@@ -170,7 +204,7 @@ export function EmailForm() {
               </svg>
               Enviando...
             </>
-          ) : status === "success" ? (
+          ) : status === "success" || status === "direct-download" ? (
             <>
               <Check className="mr-2 h-4 w-4" />
               Enviado
@@ -190,3 +224,7 @@ export function EmailForm() {
     </div>
   )
 }
+function trackEmailSubmission(arg0: boolean) {
+  throw new Error("Function not implemented.")
+}
+
