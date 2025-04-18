@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Send, Check, AlertCircle, Download } from "lucide-react"
 import { motion } from "framer-motion"
-import { sendWelcomeEmail } from "@/components/actions/email-sendgrid"
+import { sendWelcomeEmail } from "@/components/actions/email-brevo"
 import { useAnalytics } from "@/hooks/use-analytics"
 
 export function EmailForm() {
