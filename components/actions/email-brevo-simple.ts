@@ -15,7 +15,7 @@ export async function sendSimpleEmail(email: string) {
       <div style="font-family: Arial, sans-serif; padding: 20px;">
         <h1>Hola ${email.split("@")[0]}</h1>
         <p>Gracias por suscribirte a SOMA.</p>
-        <p><a href="https://soma-landing-page.vercel.app">Visitar SOMA</a></p>
+        <p><a href="https://soma-azure.vercel.app/">Visitar SOMA</a></p>
       </div>
     `
 

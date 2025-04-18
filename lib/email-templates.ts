@@ -100,7 +100,7 @@ export const emailTemplates = {
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <a href="https://soma-landing-page.vercel.app" style="display: inline-block; padding: 14px 30px; background: linear-gradient(135deg, #7ee8fa 0%, #80d0c7 100%); color: #1a1a2e; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0;">Visitar SOMA</a>
+                    <a href="https://soma-azure.vercel.app/" style="display: inline-block; padding: 14px 30px; background: linear-gradient(135deg, #7ee8fa 0%, #80d0c7 100%); color: #1a1a2e; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0;">Visitar SOMA</a>
                   </td>
                 </tr>
               </table>
