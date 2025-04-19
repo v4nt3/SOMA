@@ -124,7 +124,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">Experimenta la calma visual</h2>
           <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-10">
             Prueba cómo SOMA transforma el contenido a escala de grises para reducir la estimulación visual y ayudarte a
-            relajarte antes de dormir.
+            relajar antes de dormir.
           </p>
           <UploadImage />
         </div>
